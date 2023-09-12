@@ -1,0 +1,52 @@
+---
+
+- name: Provision GitHub Action Runner instance
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files:
+    - vars/gha-runner-vars.yml
+  tasks:
+  - name: Ensure {{ instance_name }} instance is running in cloud {{ cloud_id }}
+    openstack.cloud.server:
+      state: present
+      cloud: "{{ cloud_id }}"
+      name: "{{ instance_name }}"
+      image: "{{ image_name }}"
+      key_name: "{{ key_name }}"
+      flavor: "{{ flavor_name }}"
+      auto_ip: false
+      security_groups:
+      - default
+      wait: true
+    register: instances_output
+
+  - name: Store IP address of instance
+    set_fact:
+      runner_ip: "{{ instances_output | json_query('server.addresses.Internal[0].addr') }}"
+
+  - name: Display runner ip
+    debug:
+      msg: "{{ runner_ip }}"
+
+  - name: Add runner to a host group
+    add_host:
+      name: "{{ runner_ip }}"
+      groups: gha_runner
+
+- name: Configure GitHub runner instance
+  hosts: gha_runner
+  tasks:
+  - name: Ensure all (apt) packages are up to date
+    become: true
+    apt:
+      update_cache: true
+      cache_valid_time: 3600
+      upgrade: "yes"
+    register: updates
+
+  - name: Ensure system is rebooted
+    become: true
+    reboot:
+      msg: Rebooting post package update
+    when: updates.changed
