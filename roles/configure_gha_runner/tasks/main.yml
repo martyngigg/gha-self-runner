@@ -6,30 +6,92 @@
     upgrade: "yes"
   register: updates
 
+- name: Install acl package to allow running tasks as non-priveledged user
+  become: true
+  apt:
+    pkg:
+    - acl
+
 - name: Install Docker
   include_role:
     name: install_docker
-
-- name: Ask GitHub for an Action registration token
-  uri:
-    url: "https://api.github.com/repos/{{ github_org }}/{{ github_repo }}/actions/runners/registration-token"
-    method: POST
-    headers:
-      Accept: application/vnd.github+json
-      Authorization: "Bearer {{ github_token }}"
-    status_code: [201]
-  register: registration_token_response
-
-- name: Store registration token
-  set_fact:
-    runner_token: "{{ registration_token_response | json_query('json.token') }}"
-
-- name: Display registration token
-  debug:
-    msg: "{{ runner_token }}"
 
 - name: Ensure system is rebooted
   become: true
   reboot:
     msg: Rebooting post package update
   when: updates.changed
+
+- name: Create {{ runner_user }} user
+  become: true
+  user:
+    name: "{{ runner_user }}"
+    create_home: true
+    shell: /bin/bash
+    groups: docker
+    append: yes
+
+- name: Check if service has already been configured
+  stat:
+    path: "/home/{{ runner_user }}/{{ runner_directory}}/svc.sh"
+  register: service
+
+- when: not service.stat.exists
+  block:
+    - name: Create actions runner working directory
+      become: true
+      become_user: "{{ runner_user }}"
+      file:
+        path: "~/{{ runner_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download GitHub actions agent files
+      become: true
+      become_user: "{{ runner_user }}"
+      get_url:
+        url: "https://github.com/actions/runner/releases/download/v{{ runner_version }}/actions-runner-linux-x64-{{ runner_version }}.tar.gz"
+        dest: "~/{{ runner_directory }}/actions-runner.tar.gz"
+        mode: '0644'
+        checksum: "sha256:{{ runner_checksum }}"
+
+    - name: Extract GitHub actions agent files
+      become: true
+      become_user: "{{ runner_user }}"
+      unarchive:
+        src: "~/{{ runner_directory }}/actions-runner.tar.gz"
+        dest: "~/{{ runner_directory }}"
+        remote_src: true
+
+    - name: Ask GitHub for an Action registration token
+      uri:
+        url: "https://api.github.com/repos/{{ github_org }}/{{ github_repo }}/actions/runners/registration-token"
+        method: POST
+        headers:
+          Accept: application/vnd.github+json
+          Authorization: "Bearer {{ github_token }}"
+        status_code: [201]
+      register: registration_token_response
+
+    - name: Store registration token
+      set_fact:
+        runner_token: "{{ registration_token_response | json_query('json.token') }}"
+
+    - name: Configure the agent
+      become: true
+      become_user: "{{ runner_user }}"
+      command: "./config.sh --unattended --url https://github.com/{{ github_org }}/{{ github_repo }} --token {{ runner_token }} --replace"
+      args:
+        chdir: "/home/{{ runner_user}}/{{ runner_directory }}"
+
+    - name: Install agent as a service
+      become: true
+      command: "./svc.sh install {{ runner_user }}"
+      args:
+        chdir: "/home/{{ runner_user}}/{{ runner_directory }}"
+
+- name: Start agent service
+  become: true
+  command: "./svc.sh start"
+  args:
+    chdir: "/home/{{ runner_user}}/{{ runner_directory }}"

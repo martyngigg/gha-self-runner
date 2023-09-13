@@ -1,2 +1,5 @@
 # Runner options
-runner_version: v2.309.0
+runner_user: runner
+runner_directory: actions-runner
+runner_version: 2.309.0
+runner_checksum: 2974243bab2a282349ac833475d241d5273605d3628f0685bd07fb5530f9bb1a
