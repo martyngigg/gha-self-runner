@@ -1,0 +1,8 @@
+# URL for docker apt keyserver
+docker_repo_key_url: https://download.docker.com/linux/ubuntu/gpg
+
+# Public key to retrieve from public server
+docker_repo_key: 8D81803C0EBFCD88
+
+# URL for Docker repository for Ubuntu
+docker_repo_url: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
