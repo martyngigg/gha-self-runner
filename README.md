@@ -69,3 +69,13 @@ source .env && ansible-playbook -i inventory.cfg -e cloud_id=CLOUD_ID -e key_nam
   -e github_org=GITHUB_ORG -e github_repo=GITHUB_REPO \
   -e github_token=$GITHUB_TOKEN ./gha-runner-provision.yml
 ```
+
+## Further Configuration
+
+The `create_openstack_vm` role has defaults for flavor and image stored in the
+[role defaults](./roles/create_openstack_vm/defaults/main.yml).
+To override these pass additional `-e` variables on the `ansible-playbook`
+commandline:
+
+- `-e flavor_name=FLAVOR_NAME`
+- `-e image_name=IMAGE_NAME`
