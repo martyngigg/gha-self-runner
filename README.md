@@ -4,6 +4,9 @@ A set of Ansible scripts for managing a self-hosted GitHub action runner.
 It deploys the action runner on the new host and installs Docker for running
 the workflows in a container.
 
+*Note: This is currently configured to attach the runner to a single repository.*
+*Changes will be required to supported an organization level runner.*
+
 ## Set Up
 
 You will need an installation of Python 3.9+ available on the `PATH`.
@@ -22,11 +25,19 @@ On the Openstack cloud web interface:
   - On the following screen click "Download clouds.yaml" and move it to
     `~/.config/openstack/clouds.yaml`.
 
-### Local machine
-
-Check ``~/.config/openstack/clouds.yaml`` and make a note of the name of
-the key in the ``clouds:`` list, the default is usually `openstack`.
+Check `~/.config/openstack/clouds.yaml` and make a note of the name of
+the key in the `clouds:` list, the default is usually `openstack`.
 This is referred to as `CLOUD_ID` below.
+
+### GitHub token
+
+Configuration requires a GitHub access token with the `repo` scope for the
+repository that will contain the runner.
+[Create an access](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token)
+token and place the generated token in a file called `.env` in the same directory
+as this readme.
+
+### Local machine
 
 Provisioning requires `Ansible` and the `openstacksdk`.
 It is recommended to install these tools inside a Python virtual environment
@@ -51,8 +62,10 @@ Provisioning the runner is a two step process:
 
 This is all achieved through the
 [gha-runner-provision.yml](./gha-runner-provision.yml) Ansible playbook.
-Run the playbook with the :
+Run the playbook from this directory :
 
 ```sh
-ansible-playbook -i inventory.cfg -e cloud_id=CLOUD_ID -e key_name=KEY_NAME ./gha-runner-provision.yml
+source .env && ansible-playbook -i inventory.cfg -e cloud_id=CLOUD_ID -e key_name=KEY_NAME \
+  -e github_org=GITHUB_ORG -e github_repo=GITHUB_REPO \
+  -e github_token=$GITHUB_TOKEN ./gha-runner-provision.yml
 ```
