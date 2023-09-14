@@ -1,4 +1,5 @@
-- name: Ensure {{ instance_name }} instance is running in cloud {{ cloud_id }}
+---
+- name: Ensure instance is running
   openstack.cloud.server:
     state: present
     cloud: "{{ cloud_id }}"
@@ -8,11 +9,11 @@
     flavor: "{{ flavor_name }}"
     auto_ip: false
     security_groups:
-    - default
+      - default
     wait: true
   register: instances_output
 
-- name: Store IP address of instance
+- name: Store instance IP address
   set_fact:
     runner_ip: "{{ instances_output | json_query('server.addresses.Internal[0].addr') }}"
 

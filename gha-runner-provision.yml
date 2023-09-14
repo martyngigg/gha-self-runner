@@ -1,8 +1,9 @@
 ---
-
-- hosts: localhost
+- name: Create Openstack VM
+  hosts: localhost
   roles:
     - create_openstack_vm
-- hosts: gha_runner
+- name: Configure VM and GHA runner
+  hosts: gha_runner
   roles:
     - configure_gha_runner

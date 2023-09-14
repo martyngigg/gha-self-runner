@@ -1,3 +1,4 @@
+---
 instance_name: gha-runner
 flavor_name: l3.nano
 image_name: ubuntu-focal-20.04-nogui

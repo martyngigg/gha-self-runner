@@ -1,3 +1,4 @@
+---
 # Runner options
 runner_user: runner
 runner_directory: actions-runner

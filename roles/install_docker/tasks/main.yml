@@ -1,3 +1,4 @@
+---
 # Use Docker's repository
 - name: Add Docker apt repository key.
   become: true
@@ -11,7 +12,7 @@
   apt_repository:
     repo: "{{ docker_repo_url }}"
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Install latest Docker community edition
   become: true
