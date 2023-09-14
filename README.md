@@ -39,7 +39,7 @@ as this readme formatted as `GITHUB_TOKEN=ghp-xxxxxxx`.
 
 ### Local machine
 
-Provisioning requires `Ansible` and the `openstacksdk`.
+Provisioning requires `Ansible` and  `openstacksdk`.
 It is recommended to install these tools inside a Python virtual environment
 to avoid clashing with system package versions.
 To create a new environment in the `./venv` directory and
@@ -49,6 +49,7 @@ install the necessary packages run:
 >python -m venv ./venv
 >source ./venv/bin/activate
 >pip install -r ./requirements.txt
+>ansible-galaxy install -r galaxy-requirements.yml
 ```
 
 ## Provision the runner
