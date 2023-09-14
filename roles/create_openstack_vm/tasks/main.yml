@@ -14,14 +14,14 @@
   register: instances_output
 
 - name: Store instance IP address
-  set_fact:
+  ansible.builtin.set_fact:
     runner_ip: "{{ instances_output | json_query('server.addresses.Internal[0].addr') }}"
 
 - name: Display runner ip
-  debug:
+  ansible.builtin.debug:
     msg: "{{ runner_ip }}"
 
 - name: Add runner to a host group
-  add_host:
+  ansible.builtin.add_host:
     name: "{{ runner_ip }}"
     groups: gha_runner

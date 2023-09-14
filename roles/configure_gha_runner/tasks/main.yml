@@ -1,7 +1,7 @@
 ---
 - name: Ensure all (apt) packages are up to date
   become: true
-  apt:
+  ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600
     upgrade: "yes"
@@ -9,23 +9,23 @@
 
 - name: Install acl package to allow running tasks as non-priveledged user
   become: true
-  apt:
+  ansible.builtin.apt:
     pkg:
       - acl
 
 - name: Install Docker
-  include_role:
+  ansible.builtin.include_role:
     name: install_docker
 
 - name: Ensure system is rebooted
   become: true
-  reboot:
+  ansible.builtin.reboot:
     msg: Rebooting post package update
   when: updates.changed
 
 - name: Create actions user
   become: true
-  user:
+  ansible.builtin.user:
     name: "{{ runner_user }}"
     create_home: true
     shell: /bin/bash
@@ -33,7 +33,7 @@
     append: true
 
 - name: Check if service has already been configured
-  stat:
+  ansible.builtin.stat:
     path: /home/{{ runner_user }}/{{ runner_directory }}/svc.sh
   register: service
 
@@ -43,7 +43,7 @@
     - name: Create actions runner working directory
       become: true
       become_user: "{{ runner_user }}"
-      file:
+      ansible.builtin.file:
         path: ~/{{ runner_directory }}
         state: directory
         mode: "0755"
@@ -51,7 +51,7 @@
     - name: Download GitHub actions agent files
       become: true
       become_user: "{{ runner_user }}"
-      get_url:
+      ansible.builtin.get_url:
         url: https://github.com/actions/runner/releases/download/v{{ runner_version }}/actions-runner-linux-x64-{{ runner_version }}.tar.gz
         dest: ~/{{ runner_directory }}/actions-runner.tar.gz
         mode: "0644"
@@ -60,13 +60,13 @@
     - name: Extract GitHub actions agent files
       become: true
       become_user: "{{ runner_user }}"
-      unarchive:
+      ansible.builtin.unarchive:
         src: ~/{{ runner_directory }}/actions-runner.tar.gz
         dest: ~/{{ runner_directory }}
         remote_src: true
 
     - name: Ask GitHub for an Action registration token
-      uri:
+      ansible.builtin.uri:
         url: https://api.github.com/repos/{{ github_org }}/{{ github_repo }}/actions/runners/registration-token
         method: POST
         headers:
@@ -76,24 +76,24 @@
       register: registration_token_response
 
     - name: Store registration token
-      set_fact:
+      ansible.builtin.set_fact:
         runner_token: "{{ registration_token_response | json_query('json.token') }}"
 
     - name: Configure the agent
       become: true
       become_user: "{{ runner_user }}"
-      command: ./config.sh --unattended --url https://github.com/{{ github_org }}/{{ github_repo }} --token {{ runner_token }} --replace
+      ansible.builtin.command: ./config.sh --unattended --url https://github.com/{{ github_org }}/{{ github_repo }} --token {{ runner_token }} --replace
       args:
         chdir: /home/{{ runner_user }}/{{ runner_directory }}
 
     - name: Install agent as a service
       become: true
-      command: ./svc.sh install {{ runner_user }}
+      ansible.builtin.command: ./svc.sh install {{ runner_user }}
       args:
         chdir: /home/{{ runner_user }}/{{ runner_directory }}
 
 - name: Start agent service
   become: true
-  command: ./svc.sh start
+  ansible.builtin.command: ./svc.sh start
   args:
     chdir: /home/{{ runner_user }}/{{ runner_directory }}

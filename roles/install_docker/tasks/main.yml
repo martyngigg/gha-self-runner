@@ -2,21 +2,21 @@
 # Use Docker's repository
 - name: Add Docker apt repository key.
   become: true
-  apt_key:
+  ansible.builtin.apt_key:
     url: "{{ docker_repo_key_url }}"
     id: "{{ docker_repo_key }}"
     state: present
 
 - name: Add Docker apt repository.
   become: true
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: "{{ docker_repo_url }}"
     state: present
     update_cache: true
 
 - name: Install latest Docker community edition
   become: true
-  apt:
+  ansible.builtin.apt:
     name:
       - docker-ce
       - docker-ce-cli
