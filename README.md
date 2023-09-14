@@ -35,7 +35,7 @@ Configuration requires a GitHub access token with the `repo` scope for the
 repository that will contain the runner.
 [Create an access](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token)
 token and place the generated token in a file called `.env` in the same directory
-as this readme.
+as this readme formatted as `GITHUB_TOKEN=ghp-xxxxxxx`.
 
 ### Local machine
 
