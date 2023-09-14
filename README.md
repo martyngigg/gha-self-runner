@@ -7,6 +7,9 @@ the workflows in a container.
 *Note: This is currently configured to attach the runner to a single repository.*
 *Changes will be required to supported an organization level runner.*
 
+**Caution: It is recommended that this is only used with private repositories since
+any pull request can trigger arbitrary code execution on the machine.**
+
 ## Set Up
 
 You will need an installation of Python 3.9+ available on the `PATH`.
