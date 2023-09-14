@@ -32,6 +32,15 @@
     groups: docker
     append: true
 
+- name: Add user to sudoers
+  become: true
+  community.general.sudoers:
+    name: runner-sudo
+    state: present
+    user: "{{ runner_user }}"
+    commands: ALL
+    nopassword: true
+
 - name: Check if service has already been configured
   ansible.builtin.stat:
     path: /home/{{ runner_user }}/{{ runner_directory }}/svc.sh
