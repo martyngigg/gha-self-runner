@@ -66,10 +66,21 @@ This is all achieved through the
 Run the playbook from this directory :
 
 ```sh
-source .env && ansible-playbook -i inventory.cfg -e cloud_id=CLOUD_ID -e key_name=KEY_NAME \
+source .env && ansible-playbook -u VM_USER --key-file ~/.ssh/KEY_FILE -i inventory.cfg -e cloud_id=CLOUD_ID -e key_name=KEY_NAME \
   -e github_org=GITHUB_ORG -e github_repo=GITHUB_REPO \
   -e github_token=$GITHUB_TOKEN ./gha-runner-provision.yml
 ```
+
+where:
+
+- `VM_USER` is the name of the user on the created VM that has sudo rights
+- `KEY_FILE` is the name of the ssh public key file that contains the `KEY_NAME`
+  added to the Openstack interface.
+
+Once the playbook has completed you should see the runner connected at
+<https://github.com/GITHUB_ORG/GITHUB_REPO/settings/actions/runners/>, where
+`GITHUB_ORG` and `GUTHUB_REPO` should be replaced by the same values used in the
+ansible command.
 
 ## Further Configuration
 
